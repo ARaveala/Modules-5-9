@@ -6,7 +6,7 @@
 /*   By: shaboom <shaboom@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 10:28:24 by shaboom           #+#    #+#             */
-/*   Updated: 2025/02/05 15:00:03 by shaboom          ###   ########.fr       */
+/*   Updated: 2025/04/17 08:59:40 by shaboom          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@
 int	main()
 {
 	//deal with user input
-	std::string nums = "10 9 8 7 1 5 4 3 2 0";
+	std::string nums = "10 9 18 7 1 51 4 3 2 0";
 	if (nums.find_first_not_of(" 0123456789") != std::string::npos)
 	{
 		std::cout<<"only positive integers allowed in set\n";
