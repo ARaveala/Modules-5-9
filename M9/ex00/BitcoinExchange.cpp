@@ -14,37 +14,69 @@
 
 #include <fstream> //file
 #include <sstream> //?
+#include <cmath> //nan
 BitcoinExchange::BitcoinExchange () : m_exchangeRates(), m_evaluationSheet(){
 	std::cout<<"constructor called\n";
 }
-
+// is this really required to make a instnace of class here?
 BitcoinExchange::BitcoinExchange(const std::string& rates, const std::string& conversions) : BitcoinExchange()  {
 
 	std::cout<<"set up constructor called\n";
-	readTounordered_map(rates, m_exchangeRates, ',');
-	readTounordered_map(conversions, m_evaluationSheet, '|');
-	//findMatchingKeys();
-}//m_exchangeRates(), m_evaluationSheet()
-
-/*BitcoinExchange::BitcoinExchange (BitcoinExchange &other) {
-	std::cout<<"copy constructor called\n";
+	readTounordered_multimap(rates, ',');
+	readTounordered_multimap(conversions, '|');
 }
-BitcoinExchange& BitcoinExchange::operator=(BitcoinExchange &other) {
-	std::cout<<"assignment operator called\n";
-	if (this != &other)
-	{
 
-	}
-
-}*/
 BitcoinExchange::~BitcoinExchange () {std::cout<<"destructor called\n";}
 
-unsigned int BitcoinExchange::getevalLength() const
-{
+unsigned int BitcoinExchange::getevalLength() const {
 	return m_listLength;
 }
 
-void BitcoinExchange::readTounordered_map(const std::string& filename, std::unordered_map<std::string, double>& unordered_map, char delim)
+bool BitcoinExchange::validateFormats(std::string date, double rate, double ammount, int line_num)
+{
+	std::string year = date.substr(0,4);
+	std::string month = date.substr(5,2);
+	std::string day = date.substr(8,2);
+	//std::cout<<"checking on data info" << date << "\n";
+	
+	if (year.length() != 4 || month.length() != 2 || day.length() != 2) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid date format "<<date<<std::endl;
+	} else if (date.find_first_not_of("0123456789-") != std::string::npos){
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid date format "<<date<<std::endl;
+	} else if (date.length() != 10 || date[4] != '-' || date[7] != '-') {
+		std::cout<<"ERROR: bad format ["<<line_num<<"]"<<date<<std::endl;
+	} else if (std::stoi(year) < 2009 || std::stoi(year) > 2025) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid year "<<year<<std::endl;
+	} else if (std::stoi(month) < 1 || std::stoi(month) > 12) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid month "<<month<<std::endl;
+	} else if (std::stoi(day) < 1 || std::stoi(day) > 31) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day "<<day<<std::endl;
+	} else if (month == "02" && std::stoi(day) > 29) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day "<<day<<" for February "<<std::endl;
+	} else if (month == "02" && std::stoi(day) == 29 && std::stoi(year) % 4 != 0) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day "<<day<<" for February "<<std::endl;
+	} else if ((month == "04" || month == "06" || month == "09" || month == "11") && std::stoi(day) > 30) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day "<<day<<" for month "<<month<<std::endl;
+	} else if (std::isnan(ammount)){//|| rate == std::nan("")) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid value "<<ammount<<std::endl;
+	} else if (rate < 0) {
+		std::cout<<"ERROR: negative rate "<<rate<<std::endl;
+	} else if (ammount < 0) {
+		std::cout<<"ERROR: negative ammount "<<ammount<<std::endl;
+	} else if (ammount > 1000.0) {
+		std::cout<<"ERROR: ammount too large "<<std::to_string(ammount)<<std::endl;
+	} else if (rate > 1000.0) {
+		std::cout<<"ERROR: rate too large "<<std::to_string(rate)<<std::endl;
+	} else if (ammount == 0) {
+		std::cout<<date<<" => "<<rate<<" = "<<ammount <<std::endl; //check this
+	}
+	else {
+		return true;
+	}
+	return false;
+}
+
+void BitcoinExchange::readTounordered_multimap(const std::string& filename, char delim)
 {
 	bool header = true;
 	std::string line, date;
@@ -55,64 +87,85 @@ void BitcoinExchange::readTounordered_map(const std::string& filename, std::unor
 	while (std::getline(file, line))
 	{
 		double value;
-		if (header)
-		{
+		if (header) {
 			// skip the first line
 			header = false;
 			continue ;
 		}
 		std::stringstream seperator(line);
-		if(!std::getline(seperator, date, delim)) // getline leavse the pointer at the first char after the first  ','
-			throw std::runtime_error("date input incorrect or missing comma : ");
+		std::getline(seperator, date, delim);
+		//if(!std::getline(seperator, date, delim)) // getline leavse the pointer at the first char after the first  ','
+		//	throw std::runtime_error("date input incorrect or missing comma : ");
         date.erase(0, date.find_first_not_of(" \t\n\r\f\v"));
         date.erase(date.find_last_not_of(" \t\n\r\f\v") + 1);
-		//seperator >> value;
-		if (!(seperator >> value)) // stream converts for us 
-			throw std::runtime_error("value missing or no value applied : ");
-		unordered_map[date] = value;
-		//unordered_map.insert(std::make_pair(date, value));
-		if (delim == '|')
+		seperator >> value;
+		/*if (!(seperator >> value)) // stream converts for us
 		{
-
-			std::cout << "Inserting into unordered_map: " << date << " -> " << value << std::endl;
+			continue;
+		}*/
+		//	throw std::runtime_error("value missing or no value applied : ");
+		// constant look up when not needed , fix this for efficiency
+		// multiple same date handling ? atleast inform user?
+		if (delim == '|') {
+			m_evaluationSheet.push_back({date, value});
+			std::cout<<"show me the value = "<<value<<"\n";
+			//std::cout << "Inserting into unordered_multimap: " << date << " -> " << value << std::endl;
 			adjustLength('+');
-			//std::cout<<"should print twice \n";
+		} else {
+			
+			m_exchangeRates.insert({date, value});
+			
 		}
+		value = std::nan("");
 
 	}
- std::cout << "Final size of unordered_map after population: ----------------------" << unordered_map.size() << std::endl;
+ std::cout << "Final size of unordered_multimap after population: ----------------------" << m_exchangeRates.size() << std::endl;
 }
 
 void BitcoinExchange::findMatchingKeys() {
-//date);
+
 	int i = 0;
-	std::unordered_map<std::string, double>::iterator it = m_evaluationSheet.begin();
-	 std::cout << "Size of m_evaluationSheet: " << m_evaluationSheet.size()<<std::endl;
-	std::cout << "Size of m_exchangerates: " << m_exchangeRates.size()<<std::endl;
-	std::cout<<"wwweeeeeeeeeeeee"<<getevalLength()<<"\n";
-	std::cout<<"first value should be 3 " <<it->second<<"\n"; //this is onlt printing once
+	std::deque<std::pair<std::string, double>>::iterator it = m_evaluationSheet.begin();
+	//std::cout << "Size of m_evaluationSheet: " << m_evaluationSheet.size()<<std::endl;
+	//std::cout << "Size of m_exchangerates: " << m_exchangeRates.size()<<std::endl;
+	//std::cout<<"first value should be 3 " <<it->second<<"\n"; //this is onlt printing once
 
 		while (it != m_evaluationSheet.end())
-		{
-			std::cout<<"should print tthrice loo in it" <<it->second<<"\n"; //this is onlt printing once
-			std::unordered_map<std::string, double>::const_iterator rateIt = m_exchangeRates.find(it->first);
-			//std::cout<<rateIt->second<< it->second<<"are these correct now\n";
-			std::cout<<"calc "<<i<<" = "; printCalculation(rateIt->second, it->second);
+		{			
+			std::multimap<std::string, double>::const_iterator rateIt = m_exchangeRates.lower_bound(it->first);
+			if (!validateFormats(it->first, rateIt->second, it->second, i + 2)) {
+				it++;
+				i++;
+				continue;
+			}
+			if (rateIt->first != it->first)
+			{
+				if (rateIt != m_exchangeRates.begin()){
+					--rateIt; // move to the previous element if it exists
+				} else {
+					std::cout << "No matching date found for " << it->first << std::endl; // bad format
+					it++;
+					continue; // no matching date found, skip to next evaluation
+				}
+			}
+			std::cout<<"calc "<<i<<" = "; printCalculation(rateIt->first, rateIt->second, it->second);
 			it++;
 			i++; // never gets to 3 as it should , only 0
 		}
-		//adjustLength('-');
-
 }
-void BitcoinExchange::printCalculation(double rate, double ammount)
+void BitcoinExchange::printCalculation(std::string date, double rate, double ammount)
 {
-	std::cout<<"show me rate = "<<rate<<"show me ammount ="<<ammount <<std::endl;
-	if (ammount <= -1)
-		std::cout<<"ERROR: number can not me miunus "<<std::endl;
-	else if (rate == 0)
+	//std::cout<<"show me rate = "<<rate<<"show me ammount ="<<ammount <<std::endl;
+	double result = 0;
+	if (rate == 0) {
 		std::cout<<0<<std::endl;
-	else
-		std::cout<<ammount * rate<<std::endl;
+
+	}
+	else {
+		//std::cout<<ammount * rate<<std::endl;
+		result = ammount * rate;
+		std::cout<<date<<" => "<<rate<<" = "<<result <<std::endl;
+	}
 }
 void BitcoinExchange::adjustLength(char op)
 {
