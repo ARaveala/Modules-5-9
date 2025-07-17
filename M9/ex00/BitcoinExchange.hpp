@@ -6,7 +6,7 @@
 /*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/29 12:05:48 by shaboom           #+#    #+#             */
-/*   Updated: 2025/07/17 16:28:24 by araveala         ###   ########.fr       */
+/*   Updated: 2025/07/17 18:27:04 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ class BitcoinExchange
 		std::multimap<std::string, double> m_exchangeRates;
 		std::deque<std::pair<std::string, double>> m_evaluationSheet;
 		void readTounordered_multimap(const std::string& filename, char delim);
-		//create a file
 		void findMatchingKeys();
 		void printCalculation(std::string date, double frate, double ammount);
 		void adjustLength(char op);
@@ -52,7 +51,4 @@ class BitcoinExchange
 		~BitcoinExchange ();
 		unsigned int getevalLength() const;
 		void showValues();
-
-		
-		
 };

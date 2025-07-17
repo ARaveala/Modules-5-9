@@ -16,17 +16,19 @@
 #include <sstream> //?
 #include <cmath> //nan
 BitcoinExchange::BitcoinExchange () : m_exchangeRates(), m_evaluationSheet(){
-	std::cout<<"constructor called\n";
 }
 // is this really required to make a instnace of class here?
 BitcoinExchange::BitcoinExchange(const std::string& rates, const std::string& conversions) : BitcoinExchange()  {
-
-	std::cout<<"set up constructor called\n";
 	readTounordered_multimap(rates, ',');
 	readTounordered_multimap(conversions, '|');
 }
 
-BitcoinExchange::~BitcoinExchange () {std::cout<<"destructor called\n";}
+BitcoinExchange::~BitcoinExchange () {
+	//std::cout<<"destructor called\n";
+	m_exchangeRates.clear();
+	m_evaluationSheet.clear();
+	m_listLength = 0;
+}
 
 unsigned int BitcoinExchange::getevalLength() const {
 	return m_listLength;
@@ -37,16 +39,16 @@ bool BitcoinExchange::validateFormats(std::string date, double rate, double ammo
 	std::string year = date.substr(0,4);
 	std::string month = date.substr(5,2);
 	std::string day = date.substr(8,2);
-	//std::cout<<"checking on data info" << date << "\n";
-	
 	if (year.length() != 4 || month.length() != 2 || day.length() != 2) {
 		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid date format "<<date<<std::endl;
 	} else if (date.find_first_not_of("0123456789-") != std::string::npos){
 		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid date format "<<date<<std::endl;
 	} else if (date.length() != 10 || date[4] != '-' || date[7] != '-') {
 		std::cout<<"ERROR: bad format ["<<line_num<<"]"<<date<<std::endl;
-	} else if (std::stoi(year) < 2009 || std::stoi(year) > 2025) {
-		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid year "<<year<<std::endl;
+	} else if (std::stoi(year) < 2009 || (std::stoi(year) == 2009 && std::stoi(month) == 1 && std::stoi(day) == 1)) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] no bit exchange history "<<date<<std::endl;
+	} else if (std::stoi(year) > 2025) {
+		std::cout<<"ERROR: Line number ["<<line_num<<"] no bit exchange history "<<year<<std::endl;
 	} else if (std::stoi(month) < 1 || std::stoi(month) > 12) {
 		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid month "<<month<<std::endl;
 	} else if (std::stoi(day) < 1 || std::stoi(day) > 31) {
@@ -57,7 +59,7 @@ bool BitcoinExchange::validateFormats(std::string date, double rate, double ammo
 		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day "<<day<<" for February "<<std::endl;
 	} else if ((month == "04" || month == "06" || month == "09" || month == "11") && std::stoi(day) > 30) {
 		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day "<<day<<" for month "<<month<<std::endl;
-	} else if (std::isnan(ammount)){//|| rate == std::nan("")) {
+	} else if (std::isnan(ammount)){
 		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid value "<<ammount<<std::endl;
 	} else if (rate < 0) {
 		std::cout<<"ERROR: negative rate "<<rate<<std::endl;
@@ -94,75 +96,56 @@ void BitcoinExchange::readTounordered_multimap(const std::string& filename, char
 		}
 		std::stringstream seperator(line);
 		std::getline(seperator, date, delim);
-		//if(!std::getline(seperator, date, delim)) // getline leavse the pointer at the first char after the first  ','
-		//	throw std::runtime_error("date input incorrect or missing comma : ");
         date.erase(0, date.find_first_not_of(" \t\n\r\f\v"));
         date.erase(date.find_last_not_of(" \t\n\r\f\v") + 1);
 		seperator >> value;
-		/*if (!(seperator >> value)) // stream converts for us
-		{
-			continue;
-		}*/
-		//	throw std::runtime_error("value missing or no value applied : ");
-		// constant look up when not needed , fix this for efficiency
-		// multiple same date handling ? atleast inform user?
 		if (delim == '|') {
 			m_evaluationSheet.push_back({date, value});
-			std::cout<<"show me the value = "<<value<<"\n";
-			//std::cout << "Inserting into unordered_multimap: " << date << " -> " << value << std::endl;
 			adjustLength('+');
 		} else {
-			
 			m_exchangeRates.insert({date, value});
-			
 		}
 		value = std::nan("");
-
 	}
- std::cout << "Final size of unordered_multimap after population: ----------------------" << m_exchangeRates.size() << std::endl;
 }
 
 void BitcoinExchange::findMatchingKeys() {
 
 	int i = 0;
 	std::deque<std::pair<std::string, double>>::iterator it = m_evaluationSheet.begin();
-	//std::cout << "Size of m_evaluationSheet: " << m_evaluationSheet.size()<<std::endl;
-	//std::cout << "Size of m_exchangerates: " << m_exchangeRates.size()<<std::endl;
-	//std::cout<<"first value should be 3 " <<it->second<<"\n"; //this is onlt printing once
-
-		while (it != m_evaluationSheet.end())
-		{			
-			std::multimap<std::string, double>::const_iterator rateIt = m_exchangeRates.lower_bound(it->first);
-			if (!validateFormats(it->first, rateIt->second, it->second, i + 2)) {
-				it++;
-				i++;
-				continue;
-			}
-			if (rateIt->first != it->first)
-			{
-				if (rateIt != m_exchangeRates.begin()){
-					--rateIt; // move to the previous element if it exists
-				} else {
-					std::cout << "No matching date found for " << it->first << std::endl; // bad format
-					it++;
-					continue; // no matching date found, skip to next evaluation
-				}
-			}
-			std::cout<<"calc "<<i<<" = "; printCalculation(rateIt->first, rateIt->second, it->second);
+	while (it != m_evaluationSheet.end())
+	{
+		std::multimap<std::string, double>::const_iterator rateIt = m_exchangeRates.lower_bound(it->first);
+		if (!validateFormats(it->first, rateIt->second, it->second, i + 2)) {
 			it++;
-			i++; // never gets to 3 as it should , only 0
+			i++;
+			continue;
 		}
+		if (rateIt->first != it->first)
+		{
+			if (rateIt != m_exchangeRates.begin()){
+				--rateIt; // move to the previous element if it exists
+				if (rateIt!= m_exchangeRates.begin()) {
+					std::cout<<"No rates for "<<it->first<<" using previous rate ";
+				}
+			} else {
+				std::cout << "No matching date found for " << it->first << std::endl; // bad format
+				it++;
+				continue; // no matching date found, skip to next evaluation
+			}
+		}
+		printCalculation(rateIt->first, rateIt->second, it->second);
+		it++;
+		i++;
+	}
 }
 void BitcoinExchange::printCalculation(std::string date, double rate, double ammount)
 {
-	//std::cout<<"show me rate = "<<rate<<"show me ammount ="<<ammount <<std::endl;
 	double result = 0;
 	if (rate == 0) {
 		std::cout<<0<<std::endl;
-
 	}
 	else {
-		//std::cout<<ammount * rate<<std::endl;
 		result = ammount * rate;
 		std::cout<<date<<" => "<<rate<<" = "<<result <<std::endl;
 	}
