@@ -13,46 +13,42 @@
 #include "BitcoinExchange.hpp"
 
 #include <fstream> //file
-#include <sstream> //?
+#include <sstream> 
 #include <cmath> //nan
 BitcoinExchange::BitcoinExchange () : m_exchangeRates(), m_evaluationSheet(){
 }
-// is this really required to make a instnace of class here?
+
 BitcoinExchange::BitcoinExchange(const std::string& rates, const std::string& conversions) : BitcoinExchange()  {
-	readTounordered_multimap(rates, ',');
-	readTounordered_multimap(conversions, '|');
+	readToContainer(rates, ',');
+	readToContainer(conversions, '|');
 }
 
 BitcoinExchange::~BitcoinExchange () {
-	//std::cout<<"destructor called\n";
 	m_exchangeRates.clear();
 	m_evaluationSheet.clear();
-	m_listLength = 0;
-}
-
-unsigned int BitcoinExchange::getevalLength() const {
-	return m_listLength;
 }
 
 bool BitcoinExchange::validateFormats(std::string date, double rate, double ammount, int line_num)
 {
+	if (date.length() != 10 || date[4] != '-' || date[7] != '-') {
+		std::cout<<"ERROR: bad format Line number ["<<line_num<<"] ::"<<date<<std::endl;
+		return false;
+	} 
 	std::string year = date.substr(0,4);
 	std::string month = date.substr(5,2);
 	std::string day = date.substr(8,2);
 	if (year.length() != 4 || month.length() != 2 || day.length() != 2) {
-		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid date format "<<date<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid date format ::"<<date<<std::endl;
 	} else if (date.find_first_not_of("0123456789-") != std::string::npos){
-		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid date format "<<date<<std::endl;
-	} else if (date.length() != 10 || date[4] != '-' || date[7] != '-') {
-		std::cout<<"ERROR: bad format ["<<line_num<<"]"<<date<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid date format ::"<<date<<std::endl;
 	} else if (std::stoi(year) < 2009 || (std::stoi(year) == 2009 && std::stoi(month) == 1 && std::stoi(day) == 1)) {
-		std::cout<<"ERROR: Line number ["<<line_num<<"] no bit exchange history "<<date<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"] no bit exchange history ::"<<date<<std::endl;
 	} else if (std::stoi(year) > 2025) {
-		std::cout<<"ERROR: Line number ["<<line_num<<"] no bit exchange history "<<year<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"] no bit exchange history ::"<<year<<std::endl;
 	} else if (std::stoi(month) < 1 || std::stoi(month) > 12) {
-		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid month "<<month<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid month ::"<<month<<std::endl;
 	} else if (std::stoi(day) < 1 || std::stoi(day) > 31) {
-		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day "<<day<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day ::"<<day<<std::endl;
 	} else if (month == "02" && std::stoi(day) > 29) {
 		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day "<<day<<" for February "<<std::endl;
 	} else if (month == "02" && std::stoi(day) == 29 && std::stoi(year) % 4 != 0) {
@@ -60,15 +56,15 @@ bool BitcoinExchange::validateFormats(std::string date, double rate, double ammo
 	} else if ((month == "04" || month == "06" || month == "09" || month == "11") && std::stoi(day) > 30) {
 		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid day "<<day<<" for month "<<month<<std::endl;
 	} else if (std::isnan(ammount)){
-		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid value "<<ammount<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"] invalid value ::"<<ammount<<std::endl;
 	} else if (rate < 0) {
-		std::cout<<"ERROR: negative rate "<<rate<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"]negative rate ::"<<rate<<std::endl;
 	} else if (ammount < 0) {
-		std::cout<<"ERROR: negative ammount "<<ammount<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"]negative ammount ::"<<ammount<<std::endl;
 	} else if (ammount > 1000.0) {
-		std::cout<<"ERROR: ammount too large "<<std::to_string(ammount)<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"]ammount too large ::"<<std::to_string(ammount)<<std::endl;
 	} else if (rate > 1000.0) {
-		std::cout<<"ERROR: rate too large "<<std::to_string(rate)<<std::endl;
+		std::cout<<"ERROR: Line number ["<<line_num<<"]rate too large ::"<<std::to_string(rate)<<std::endl;
 	} else if (ammount == 0) {
 		std::cout<<date<<" => "<<rate<<" = "<<ammount <<std::endl; //check this
 	}
@@ -78,16 +74,18 @@ bool BitcoinExchange::validateFormats(std::string date, double rate, double ammo
 	return false;
 }
 
-void BitcoinExchange::readTounordered_multimap(const std::string& filename, char delim)
+void BitcoinExchange::readToContainer(const std::string& filename, char delim)
 {
 	bool header = true;
 	std::string line, date;
 
 	std::ifstream file(filename);
 	if (!file)
-		throw std::runtime_error(filename + "error "); // file could not be found or opened
-	while (std::getline(file, line))
-	{
+		throw std::runtime_error(filename + "ERROR:: file could not be found or opened "); // file could not be found or opened
+	if (file.peek() == std::ifstream::traits_type::eof()) {
+    	throw std::runtime_error(filename + "ERROR:: file is empty");
+	}
+	while (std::getline(file, line)) {
 		double value;
 		if (header) {
 			// skip the first line
@@ -101,7 +99,6 @@ void BitcoinExchange::readTounordered_multimap(const std::string& filename, char
 		seperator >> value;
 		if (delim == '|') {
 			m_evaluationSheet.push_back({date, value});
-			adjustLength('+');
 		} else {
 			m_exchangeRates.insert({date, value});
 		}
@@ -121,8 +118,7 @@ void BitcoinExchange::findMatchingKeys() {
 			i++;
 			continue;
 		}
-		if (rateIt->first != it->first)
-		{
+		if (rateIt->first != it->first) {
 			if (rateIt != m_exchangeRates.begin()){
 				--rateIt; // move to the previous element if it exists
 				if (rateIt!= m_exchangeRates.begin()) {
@@ -131,7 +127,7 @@ void BitcoinExchange::findMatchingKeys() {
 			} else {
 				std::cout << "No matching date found for " << it->first << std::endl; // bad format
 				it++;
-				continue; // no matching date found, skip to next evaluation
+				continue; // no matching date found, skip to next evaluation (fail safe)
 			}
 		}
 		printCalculation(rateIt->first, rateIt->second, it->second);
@@ -149,26 +145,4 @@ void BitcoinExchange::printCalculation(std::string date, double rate, double amm
 		result = ammount * rate;
 		std::cout<<date<<" => "<<rate<<" = "<<result <<std::endl;
 	}
-}
-void BitcoinExchange::adjustLength(char op)
-{
-	switch (op)
-	{
-		case '+':
-			++m_listLength;
-			break ;
-		case '-':
-			if (m_listLength > 0)
-			{
-				--m_listLength;
-			}
-			break;
-		default:
-			throw std::runtime_error("Invalid operation");
-            break;
-	}
-}
-void BitcoinExchange::showValues()
-{
-	findMatchingKeys();
 }
