@@ -3,16 +3,16 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: shaboom <shaboom@student.42.fr>            +#+  +:+       +#+         #
+#    By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/05 10:23:48 by shaboom           #+#    #+#              #
-#    Updated: 2025/02/05 10:24:14 by shaboom          ###   ########.fr        #
+#    Updated: 2025/07/28 18:21:16 by araveala         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CPPFILES = $(wildcard *.cpp)
 CPP = c++
-CPPFLAGS = -Werror -Wextra -Wall -Wshadow -Wno-shadow -std=c++17 -MMD -MP
+CPPFLAGS = -O3 -Werror -Wextra -Wall -Wshadow -Wno-shadow -std=c++17 -MMD -MP
 BUILDDIR = buildofiles/
 OFILES = $(addprefix $(BUILDDIR), $(notdir $(CPPFILES:.cpp=.o)))
 DEPFILES = $(OFILES:.o=.d)

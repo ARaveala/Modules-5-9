@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PmergeMe.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shaboom <shaboom@student.42.fr>            +#+  +:+       +#+        */
+/*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 10:49:19 by shaboom           #+#    #+#             */
-/*   Updated: 2025/02/05 20:10:06 by shaboom          ###   ########.fr       */
+/*   Updated: 2025/07/28 18:26:35 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,37 +14,43 @@
 #include <algorithm>
 #include "PmergeMe.hpp"
 #include <sstream>
+#include <chrono>
 
 template<typename Container>
-static void printContainer(const Container& cont) {
-    for (const auto& elem : cont) {
-        std::cout << elem << " ";
+static void printContainer(const Container& cont, std::string type) {
+    std::cout << type;
+	for (const auto& elem : cont) {
+        std::cout <<elem << " ";
     }
     std::cout << std::endl;
 }
+
+
 void PmergeMe::test()
 {
 	//TimeDiff1
 	std::cout<<"insertion sort vecotr\n";
-	//time stamp start
-	insertionSortVec(m_vec, 0, m_vec.size() - 1);
-	printContainer(m_vec);
-	//time stamp end
-	// take comparison time store in timeDiff1 
-	insertionSortList(m_lst);
-	printContainer(m_lst);
-	// new start time
-	std::cout<<"insertion sort deque\n";
-} 
-PmergeMe::PmergeMe() {std::cout<<"default constructor called\n";}
+	printContainer(m_vec, " vector::numbers before ");
+	printContainer(m_lst, " List::numbers before ");
+	auto start_vec = std::chrono::high_resolution_clock::now();
+	insertionSortVec();
+	auto end_vec = std::chrono::high_resolution_clock::now();
+	auto start_lst = std::chrono::high_resolution_clock::now();
+	insertionSortList();
+	auto end_lst = std::chrono::high_resolution_clock::now();
+	printContainer(m_vec, "  after vector sorted");
+	printContainer(m_lst,  "  after list sorted");
+	
+    std::chrono::duration<double, std::micro> duration1 = end_vec - start_vec;
+    std::cout << "Sorting took " << duration1.count() << " µs" << std::endl;
+    std::chrono::duration<double, std::micro> duration2 = end_lst - start_lst;
+    std::cout << "Sorting took " << duration2.count() << " µs" << std::endl;
+}
+
+PmergeMe::PmergeMe() {}
 
 PmergeMe::PmergeMe(const std::string& set) {
-
-	//fill vector and deq
 	fillContainers(set);
-	//printContainer(m_lst);
-	//printContainer(m_vec);
-	std::cout<<"default constructor called\n";
 }
 
 void PmergeMe::fillContainers(const std::string& set)
@@ -62,14 +68,12 @@ void PmergeMe::fillContainers(const std::string& set)
 			// if (convertedNum > or something) throw
 			m_lst.push_back(convertedNum);
 			m_vec.push_back(convertedNum);
-		}
-		catch(const std::exception& e)
-		{
+		} catch(const std::exception& e) {
 			std::cerr << "stoi failure in construction" << e.what() << '\n';
 		}
 	}	
 }
-PmergeMe::~PmergeMe() {std::cout<<"deconstructor called\n";}
+PmergeMe::~PmergeMe() {}
 
 /**
  * @brief bit shifting here by 1 is the same as / 2
@@ -81,26 +85,20 @@ PmergeMe::~PmergeMe() {std::cout<<"deconstructor called\n";}
  * @param comp 
  * @return unsigned int 
  */
-template<typename Container>
-int PmergeMe::insertPoint(const Container& cont, unsigned int key, int left, int right, int& comp) {
+
+int PmergeMe::insertPointVec(std::vector<unsigned int>& cont , unsigned int key, int left, int right) {
     while (left <= right) {
-        comp++;
-//		std::cout<<"when is right and out of bounds matching = "<<right<<"and left "<<left<<std::endl;
-		//unsigned int mid = left + (right - left) / 2;
 		unsigned int mid = left + ((right - left) >> 1);
-        if (cont[mid] == key)
-		{
-			comp++;
-            return mid + 1;			
+        if (cont[mid] == key) {
+            return mid + 1;	
 		}
-        else if (cont[mid] < key)
-		{
-			comp++;
+		else if (cont[mid] < key) {
             left = mid + 1;
 		}
-        else
+        else {
             right = mid - 1;
-    }
+		}
+	}
     return left;
 }
 
@@ -115,106 +113,70 @@ int PmergeMe::insertPoint(const Container& cont, unsigned int key, int left, int
  * @param vec 
  * @param left 
  * @param right 
- * 	if (vec.empty())
-		throw std::runtime_error("vec was empty for some reason ");
-	if (right < left)
-		throw std::runtime_error("right is bigger than ölefty  ");
+
  */
 
-void PmergeMe::insertionSortVec(std::vector<unsigned int>& vec, int left, int right) {
-	int comp = 0;
-
-	for (int i = left + 1; i <= right; ++i) {
-	    comp++;
-		int key = vec[i];
-		//std::cout<<"key to insert = "<<key<<"\n";
-        int j = i - 1;
-		//std::cout<<"when is j and out of bounds matching = "<<j<<"and left "<<left<<std::endl;
-	    int pos = insertPoint(vec, key, left, j, comp);
-		while (j >= pos) {
-		    vec[j + 1] = vec[j];
-			--j;
-			comp++;
-        }
-        vec[j + 1] = key;
-		/*std::cout << "Array after inserting key: ";
-        for (const auto& num : vec) {
-            std::cout << num << " ";
-        }
-        std::cout << std::endl;*/
-        std::cout <<"comp count = "<<comp<< std::endl;
-    }
-}
-
-
-void PmergeMe::insertionSortList(std::list<unsigned int>& lst) {
-	int comp = 0;
+void PmergeMe::insertionSortVec() {
+	//int comp = 0;
+	std::vector<unsigned int> small, large;
 	
-    //if (lst.empty()) return; this check should happen before this fucntion 
-    std::list<unsigned int>::iterator it = lst.begin();
-    ++it;
-    for (; it != lst.end(); ++it) {
+	// Step 1: Pair and split
+	for (size_t i = 0; i + 1 < m_vec.size(); i += 2) {
+	    //comp++;
+		if (m_vec[i] < m_vec[i + 1]) {
+	        small.push_back(m_vec[i]);
+	        large.push_back(m_vec[i + 1]);
+	    } else {
+	        small.push_back(m_vec[i + 1]);
+	        large.push_back(m_vec[i]);
+	    }
+	}
+	if (m_vec.size() % 2 != 0) {
+	    small.push_back(small.back());
+	}
+	std::sort(large.begin(), large.end());
+	for (const unsigned int& key: small) {
+    	int pos = insertPointVec(large, key, 0, large.size() - 1);
+    	large.insert(large.begin() + pos, key);
+	}
+	m_vec = large;
+}
+
+
+void PmergeMe::insertionSortList() {
+	//int comp = 0;
+	
+    if (m_lst.empty()) {return;} 
+	std::list<unsigned int> small, large;
+	for (std::list<unsigned int>::iterator it = m_lst.begin(); it != m_lst.end(); it ++) {
+		std::list<unsigned int>::iterator next =  std::next(it);
+		//comp++;
+	    if (next == m_lst.end()) {
+	        small.push_back(*it);
+	        break;
+	    }
+		if (*it < *next) {
+	        small.push_back(*it);
+	        large.push_back(*next);
+	    } else {
+	        small.push_back(*next);
+	        large.push_back(*it);
+	    }
+		it = m_lst.erase(it);
+	}
+
+	large.sort();
+    std::list<unsigned int>::iterator it = small.begin();
+    for (; it != small.end(); ++it) {
         unsigned int key = *it;
-		comp++;
-        // Move backwards to find the correct position for 'key'
-        std::list<unsigned int>::iterator insertionPoint = lst.begin();
-        while (insertionPoint != it && *insertionPoint <= key) {
-			comp += 2;
-		    ++insertionPoint;
-        }        
-        // Shift elements and insert 'key' at the correct position
-        std::list<unsigned int>::iterator k = it;
-        while (k != insertionPoint) {
-			comp++;
-		    *k = *std::prev(k);
-            --k;
+		//comp++;
+        std::list<unsigned int>::iterator insertionPoint = large.begin();
+        while (insertionPoint != large.end() && *insertionPoint < key) {
+			//comp ++;
+		    insertionPoint++;
         }
-        *insertionPoint = key;
-        // Debug output
-        /*std::cout << "List after inserting key: ";
-        for (const auto& num : lst) {
-            std::cout << num << " ";
-        }
-        std::cout << std::endl;
-		}*/
+		large.insert(insertionPoint, key);
 	}
-    std::cout <<"comp count list= "<<comp<< std::endl;
+	m_lst = large;
 }
-
-// Helper function to insert in sorted order
-/*template<typename Container>
-void insertInOrder(Container& cont, typename Container::iterator start, typename Container::iterator end) {
-    for (auto it = start; it != end; ++it) {
-        auto pos = std::upper_bound(cont.begin(), it, *it);
-        std::rotate(pos, it, it + 1);
-    }
-}
-void mergeSort(std::vector<int>& vec, int left, int right) {
-    if (left < right) {
-        int mid = left + (right - left) / 2;
-        
-        // Recursively sort each half
-        mergeSort(vec, left, mid);
-        mergeSort(vec, mid + 1, right);
-        
-        // Merge the sorted halves
-        std::inplace_merge(vec.begin() + left, vec.begin() + mid + 1, vec.begin() + right + 1);
-	}
-}
-// Ford-Johnson sorting for vector
-void fordJohnsonSort(std::vector<int>& vec) {
-//    std::sort(vec.begin(), vec.end()); // Initial sort for demo purposes
-	mergeSort(vec, vec.front(), vec.back());
-    insertInOrder(vec, vec.begin(), vec.end());
-}
-
-// Ford-Johnson sorting for deque
-void fordJohnsonSort(std::deque<int>& deq) {
-    std::sort(deq.begin(), deq.end()); // Initial sort for demo purposes
-	//mergeSort(deq, deq.front(), deq.back());
-    insertInOrder(deq, deq.begin(), deq.end());
-}*/
-
-// Helper function to print a container
-
 
