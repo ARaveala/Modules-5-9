@@ -6,7 +6,7 @@
 /*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 10:24:27 by shaboom           #+#    #+#             */
-/*   Updated: 2025/07/31 10:39:47 by araveala         ###   ########.fr       */
+/*   Updated: 2025/08/05 16:59:24 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,16 +27,50 @@ class PmergeMe
 		std::list<unsigned int> m_lst;
 		std::vector<unsigned int> m_vec;
 		size_t m_comp_vec = 0;
+		size_t m_comp_lst = 0;
 		void fillContainers(const std::string& set);
 		int insertPointVec(std::vector<std::pair<unsigned int, unsigned int>>& cont, unsigned int key, int left, int right);
-		void insertionSortVec();
-		void insertionSortList();
+		
+		void beginMergeInsertionSortVec();
+		void beginMergeInsertionSortlst();
 
-		void sortLarge(std::vector<std::pair<unsigned int, unsigned int>>& large);
+			
+		void insertionSortList();
+		size_t findAnchorIndexVec(const std::vector<std::pair<unsigned int, unsigned int>>& vec, size_t anchor);
+		void insertionSortVec(std::vector<std::pair<unsigned int, unsigned int>>& small, std::vector<std::pair<unsigned int, unsigned int>>& large,  const std::vector<std::pair<unsigned int, unsigned int>>& orgIndex);
 		std::vector<std::pair<unsigned int, unsigned int>> splitResultsVec(std::vector<std::pair<unsigned int, unsigned int>>& Originallarge, int depth);
 		// testing
-		void insertionSortList(std::vector<std::pair<unsigned int, unsigned int>>& small, std::vector<std::pair<unsigned int, unsigned int>>& large);
+
+
+		
+		//void beginMergeInsertionSortlst();
+		std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>> splitResultsLst(std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>& large,
+    int depth);
+		void insertionSortLst(
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>& small,
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>& large,
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>& anchors
+);
+	std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>::iterator findInsertPositionLst(
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>& large,
+    std::list<unsigned int>::iterator anchor
+);
+		std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>::iterator insertPointLst(
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>& cont,
+    unsigned int key,
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>::iterator left,
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>::iterator right
+);
+		//original
+		//void insertionSortVec(std::vector<std::pair<unsigned int, unsigned int>>& small, std::vector<std::pair<unsigned int, unsigned int>>& large, unsigned int orgIndex);
 		std::vector<size_t> generateJacobsthalIndices(size_t maxSize);
+
+		/*std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>::iterator insertPointLst(
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>& cont,
+    unsigned int key,
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>::iterator left,
+    std::list<unsigned int>::iterator right
+);*/
 	public:
 		PmergeMe ();
 		PmergeMe (const std::string& set);

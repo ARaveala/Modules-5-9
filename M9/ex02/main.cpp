@@ -6,7 +6,7 @@
 /*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 10:28:24 by shaboom           #+#    #+#             */
-/*   Updated: 2025/07/31 15:50:55 by araveala         ###   ########.fr       */
+/*   Updated: 2025/08/05 13:41:12 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ int	main()
 	}	
 	//	throw std::runtime_error("only positive integers allowed in set\n");
 
-	PmergeMe test(num4);
+	PmergeMe test(num3);
 	test.test();
 	return 0;
 }
