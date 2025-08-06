@@ -6,7 +6,7 @@
 /*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 10:24:27 by shaboom           #+#    #+#             */
-/*   Updated: 2025/08/05 16:59:24 by araveala         ###   ########.fr       */
+/*   Updated: 2025/08/06 09:33:38 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,8 @@ class PmergeMe
     std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>& cont,
     unsigned int key,
     std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>::iterator left,
-    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>::iterator right
+    std::list<std::pair<unsigned int, std::list<unsigned int>::iterator>>::iterator right,
+	bool recursion
 );
 		//original
 		//void insertionSortVec(std::vector<std::pair<unsigned int, unsigned int>>& small, std::vector<std::pair<unsigned int, unsigned int>>& large, unsigned int orgIndex);
