@@ -6,11 +6,11 @@
 /*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 10:28:24 by shaboom           #+#    #+#             */
-/*   Updated: 2025/08/05 13:41:12 by araveala         ###   ########.fr       */
+/*   Updated: 2025/08/06 15:26:47 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "PmergeMe.hpp"
+//#include "PmergeMe.hpp"
 
 /**
  * @brief we can take in args later with a quick function that scans for any other
@@ -36,8 +36,91 @@
     return 0;
 }*/
 
+#include <iostream>
+#include <vector>
+#include <set>
+#include <random>
+#include <fstream>
+#include <stdexcept>
+#include <sstream>
+#include "PmergeMe.hpp" // Assuming your class is defined here
 
-int	main()
+// must fix very large individual numbers issue 
+
+
+// 🔧 Generate unique random numbers ≥ 0
+std::string generateUniqueNumbers(size_t count, int maxValue = 1000000) {
+    std::set<int> unique; //ensures no doubles
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(0, maxValue);
+
+    while (unique.size() < count) {
+        unique.insert(dist(gen));
+    }
+	/*std::ostringstream oss;
+	for (int num : unique) {
+	    oss << num << ' ';
+	}*/
+	//return oss.str();
+	std::string numSet;
+	for (int num : unique) {
+		numSet += std::to_string(num) + " ";
+	}
+	std::istringstream iss(numSet);
+	std::set<int> seen;
+	int val;
+	while (iss >> val) {
+	    if (!seen.insert(val).second) {
+	        std::cout << "⚠️ Duplicate found in generated string: " << val << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	}
+	return numSet;
+}
+
+// 📝 Dump failing input to file
+void dumpToFile(const std::string& data, const std::string& filename) {
+    std::ofstream out(filename);
+    if (!out) {
+        std::cerr << "Failed to open file: " << filename << std::endl;
+        return;
+    }
+
+    for (char num : data) {
+        out << num << " ";
+    }
+    out << std::endl;
+    out.close();
+    std::cout << "❌ Failure dumped to " << filename << std::endl;
+}
+
+int main() {
+    const int testRuns = 10;       // 🔁 Number of test iterations
+    const int numCount = 3000;      // 🔢 Numbers per test
+    int failures = 0;
+
+    for (int i = 0; i < testRuns; ++i) {
+        std::string numSet = generateUniqueNumbers(numCount);
+		//std::cout<<"checking numset before testing ="<<numSet<<"\n";
+        try {
+            PmergeMe test(numSet);
+            test.test(); // 🚀 Run your sorting test
+        } catch (const std::exception& e) {
+            ++failures;
+            std::cerr << "Test #" << i + 1 << " failed: " << e.what() << std::endl;
+
+            // 📝 Save the failing input
+            std::string filename = "failed_test_" + std::to_string(i + 1) + ".txt";
+            dumpToFile(numSet, filename);
+        }
+		numSet ="";
+    }
+
+    std::cout << "\n✅ Completed " << testRuns << " tests with " << failures << " failures.\n";
+    return 0;
+}
+/*int	main()
 {
 	//deal with user input
 	std::string nums = "10 9 18 7 1 51 4 3 2 0";
@@ -57,4 +140,4 @@ int	main()
 	PmergeMe test(num3);
 	test.test();
 	return 0;
-}
+}*/
