@@ -6,7 +6,7 @@
 /*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 10:49:19 by shaboom           #+#    #+#             */
-/*   Updated: 2025/08/06 15:24:54 by araveala         ###   ########.fr       */
+/*   Updated: 2025/08/06 16:16:15 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,7 @@ static void checkOrderVecPair(std::vector<std::pair<unsigned int, unsigned int>>
 	for (size_t i = 0; i + 1 < vec.size(); ++i) {
 		if (vec[i].first > vec[i + 1].first){
 			throw std::runtime_error("ERROR @( " + msg + " ) value = " + std::to_string(vec[i].first) + "is bigger than next value = " + std::to_string(vec[i + 1].first) + "\n");
-//			std::cout<<"---error numbers not in order in vector sort at index " << i << " value = " << vec[i].first << " next value = " << vec[i + 1].first << std::endl;
-//			exit(EXIT_FAILURE);
+
 		}
 	}
 	std::cout<<" vec values ordered @("<<msg<<") current size of large = "<<vec.size()<<"\n";
@@ -176,7 +175,7 @@ PmergeMe::PmergeMe() {}
 PmergeMe::PmergeMe(const std::string& set) {
 	fillContainers(set);
 }
-
+#include <set>
 void PmergeMe::fillContainers(const std::string& set)
 {
 	std::istringstream tokens(set);
@@ -189,11 +188,20 @@ void PmergeMe::fillContainers(const std::string& set)
 			convertedNum = stoi(num);
 			// if (convertedNum > or something) throw
 			m_lst.push_back(convertedNum);
+			
 			m_vec.push_back(convertedNum);
 		} catch(const std::exception& e) {
 			std::cerr << "stoi failure in construction" << e.what() << '\n';
 		}
-	}	
+
+	}
+	if (m_lst.size() == 1) {
+		throw std::runtime_error("need more values than 1 ");		
+	}
+	std::set<unsigned int> dups(m_lst.begin(), m_lst.end());
+	if (m_lst.size() != dups.size()) {
+		throw std::runtime_error("no duplicates allowed in number set ");
+	}
 }
 PmergeMe::~PmergeMe() {}
 
