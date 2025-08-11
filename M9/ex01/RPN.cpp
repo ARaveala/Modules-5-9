@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RPN.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shaboom <shaboom@student.42.fr>            +#+  +:+       +#+        */
+/*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/04 12:47:35 by shaboom           #+#    #+#             */
-/*   Updated: 2025/02/05 10:22:00 by shaboom          ###   ########.fr       */
+/*   Updated: 2025/08/11 15:53:14 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,25 +14,17 @@
 #include <cctype>
 #include <sstream>
 #include <algorithm>
+
 RPN::RPN () {
-	std::cout<<" defalut constructor called\n";
 }
 
 RPN::RPN(const std::string& expression) {
 
 	initialValidation(expression);
-	//	throw std::runtime_error("expression invalid");
 	m_expression =  expression;
-	std::cout<<"set up constructor called\n";
 }
 
-/**
- * @brief stack depth will always  need 
- * 
- * @param input 
- * @return true 
- * @return false 
- */
+
 void RPN::initialValidation(const std::string& input)
 {
 	if (input.length() == 1)
@@ -76,34 +68,35 @@ double RPN::validateNumber(const std::string& num)
 		}
 	return number;	
 }
+
 double RPN::evaluate() {
     std::stack<double> stack;
     std::istringstream tokens(m_expression);
     std::string token;
 
     while (tokens >> token) {
-        if (std::isdigit(token[0]))
+        if (std::isdigit(token[0])) {
             stack.push(validateNumber(token));
-			
+		}
         else if (isOperator(token[0])) {
             if (token.size() != 1 || stack.size() < 2)
                 throw std::runtime_error("Error: Invalid RPN expression");   
-            double operand2 = stack.top(); stack.pop();
-            //double operand1 = stack.top(); stack.pop();
+            double operand2 = stack.top();
+			stack.pop();
             stack.top() = performOperation(token, stack.top(), operand2);
-			//stack.push(performOperation(token, operand1, operand2));
         }
-		else
+		else {
             throw std::runtime_error("Error: Unknown :: RPN.cpp line 96");
-    }
+		}
+	}
     if (stack.size() != 1) {
         throw std::runtime_error("Error: Invalid RPN expression");
     }
     return stack.top();
 }
-double RPN::calculation()
-{
-	return evaluate();//result;
+
+double RPN::calculation() {
+	return evaluate();
 }
 
-RPN::~RPN () {std::cout<<"destructor called\n";}
+RPN::~RPN () { }

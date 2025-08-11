@@ -6,7 +6,7 @@
 /*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/16 17:23:43 by araveala          #+#    #+#             */
-/*   Updated: 2025/07/01 15:54:22 by araveala         ###   ########.fr       */
+/*   Updated: 2025/07/01 21:24:27 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,17 +33,10 @@ int main()
 {
 
 	MutantStack<int> mstack;
-	/*mstack.push(5);
-	mstack.push(17);
-	std::cout << mstack.top() << std::endl;
-	mstack.pop();
-	std::cout << mstack.size() << std::endl;
-	mstack.push(3);
-	mstack.push(5);
-	mstack.push(737);
-	//[...]
-	mstack.push(0);*/
+	
 	iteratorValues(mstack);
+	
+
 	MutantStack<int>::iterator it = mstack.begin();
 	MutantStack<int>::iterator ite = mstack.end();
 	++it;
@@ -77,27 +70,52 @@ int main()
 			++it;
 		}
 		
-		return 0;
 		
 	}
-	const MutantStack<int> const_mstack = mstack;
-	
-	//iteratorValues(const_mstack);
-	{
-		MutantStack<int>::const_iterator const_it = const_mstack.begin();
-		MutantStack<int>::const_iterator const_ite = const_mstack.end();
-		while (const_it != const_ite)
-		{
-			std::cout << *const_it << std::endl;
-			++const_it;
-		}
-		
-		
-	}
-}
-/*
-	std::stack test;
 
+	std::cout<<"reverse test \n";
+
+	MutantStack<int> reverse_mstack;
 	
+	iteratorValues(reverse_mstack);
+	
+
+	MutantStack<int>::reverse_iterator reverse_it = reverse_mstack.rbegin();
+	MutantStack<int>::reverse_iterator reverse_ite = reverse_mstack.rend();
+	++reverse_it;
+	--reverse_it;
+	while (reverse_it != reverse_ite)
+	{
+		std::cout << *reverse_it << std::endl;
+		++reverse_it;
+	}
+
+	std::cout<<"const tests ---- \n";
+	const MutantStack<int> const_mstack = mstack;
+
+	std::cout << const_mstack.top() << std::endl;
+	std::cout << const_mstack.size() << std::endl;
+	MutantStack<int>::const_iterator const_it = const_mstack.begin();
+	MutantStack<int>::const_iterator const_ite = const_mstack.end();
+	while (const_it != const_ite)
+	{
+		std::cout << *const_it << std::endl;
+		++const_it;
+	}
+
+	std::cout<<"const reverse tests ---- \n";
+	const MutantStack<int> const_reverse_mstack = mstack;
+
+	std::cout << const_reverse_mstack.top() << std::endl;
+	std::cout << const_reverse_mstack.size() << std::endl;
+	MutantStack<int>::const_reverse_iterator const_reverse_it = const_reverse_mstack.rbegin();
+	MutantStack<int>::const_reverse_iterator const_reverse_ite = const_reverse_mstack.rend();
+	while (const_reverse_it != const_reverse_ite)
+	{
+		std::cout << *const_reverse_it << std::endl;
+		++const_reverse_it;
+	}
+
 	return 0;
-}*/
+
+}

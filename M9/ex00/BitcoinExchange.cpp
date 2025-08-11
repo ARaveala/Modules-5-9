@@ -15,23 +15,41 @@
 #include <fstream> //file
 #include <sstream> 
 #include <cmath> //nan
-BitcoinExchange::BitcoinExchange () : m_exchangeRates(), m_evaluationSheet(){
+
+
+/**
+ * @brief constructor sets containers into existenece 
+ */
+BitcoinExchange::BitcoinExchange () : m_exchangeRates(), m_converstionSheet(){
 }
 
+/**
+ * @brief non default constructor uses default constructor (one must exits as per subject rules) and fils up multimap (exchange rates)
+ * and deque (conversions required), using individual delemeter.
+ */
 BitcoinExchange::BitcoinExchange(const std::string& rates, const std::string& conversions) : BitcoinExchange()  {
 	readToContainer(rates, ',');
 	readToContainer(conversions, '|');
 }
 
+/**
+ * @brief deconstructor , clears our containers
+ */
 BitcoinExchange::~BitcoinExchange () {
 	m_exchangeRates.clear();
-	m_evaluationSheet.clear();
+	m_converstionSheet.clear();
 }
 
+/**
+ * @brief year month and date are checked first using substr only if we have enough indexes to fullfill each substr.
+ * 
+ * Inorder to get mmore direct error messages an elseif forest is used, however it is the simplest way to hanle this
+ * style of error handling . 
+ */
 bool BitcoinExchange::validateFormats(std::string date, double rate, double ammount, int line_num)
 {
 	if (date.length() != 10 || date[4] != '-' || date[7] != '-') {
-		std::cout<<"ERROR: bad format Line number ["<<line_num<<"] ::"<<date<<std::endl;
+		std::cout<<"ERROR: bad date format Line number ["<<line_num<<"] ::"<<date<<std::endl;
 		return false;
 	} 
 	std::string year = date.substr(0,4);
@@ -74,6 +92,9 @@ bool BitcoinExchange::validateFormats(std::string date, double rate, double ammo
 	return false;
 }
 
+/**
+ * @brief takes provided file and fills in continaers based on delimeter
+ */
 void BitcoinExchange::readToContainer(const std::string& filename, char delim)
 {
 	bool header = true;
@@ -81,7 +102,7 @@ void BitcoinExchange::readToContainer(const std::string& filename, char delim)
 
 	std::ifstream file(filename);
 	if (!file)
-		throw std::runtime_error(filename + "ERROR:: file could not be found or opened "); // file could not be found or opened
+		throw std::runtime_error(filename + "ERROR:: file could not be found or opened ");
 	if (file.peek() == std::ifstream::traits_type::eof()) {
     	throw std::runtime_error(filename + "ERROR:: file is empty");
 	}
@@ -97,8 +118,11 @@ void BitcoinExchange::readToContainer(const std::string& filename, char delim)
         date.erase(0, date.find_first_not_of(" \t\n\r\f\v"));
         date.erase(date.find_last_not_of(" \t\n\r\f\v") + 1);
 		seperator >> value;
+		if (seperator.fail()) {
+			value = std::nan("");
+		}
 		if (delim == '|') {
-			m_evaluationSheet.push_back({date, value});
+			m_converstionSheet.push_back({date, value});
 		} else {
 			m_exchangeRates.insert({date, value});
 		}
@@ -106,13 +130,29 @@ void BitcoinExchange::readToContainer(const std::string& filename, char delim)
 	}
 }
 
+/**
+ * @brief this function loops through the provided converstion sheet that has been give as input, and tries to find a matching date from the 
+ * exchange rates provided by subject (data.csv). Validation handles format checks and continues to next value in list if format is incorrect.
+ * 
+ * if validation succeeds , We are assumed to have a valid date, we check to see if that date exists, else we find the previouse date as per subject request.
+ * 
+ * The validation happens per line as the subject seems to suggest we should output each error but that should not discontinue the ability to keep
+ * looking through the file and finding matches
+ */
 void BitcoinExchange::findMatchingKeys() {
 
 	int i = 0;
-	std::deque<std::pair<std::string, double>>::iterator it = m_evaluationSheet.begin();
-	while (it != m_evaluationSheet.end())
+	std::deque<std::pair<std::string, double>>::iterator it = m_converstionSheet.begin();
+	while (it != m_converstionSheet.end())
 	{
 		std::multimap<std::string, double>::const_iterator rateIt = m_exchangeRates.lower_bound(it->first);
+		if (rateIt == m_exchangeRates.end())  {
+			validateFormats(it->first, it->second, it->second, i + 2);
+			it++;
+			i++;
+			continue;
+
+		}
 		if (!validateFormats(it->first, rateIt->second, it->second, i + 2)) {
 			it++;
 			i++;
@@ -135,6 +175,9 @@ void BitcoinExchange::findMatchingKeys() {
 		i++;
 	}
 }
+/**
+ * @brief checks if value is 0, otherwise we do conversion calculation and display it .
+ */
 void BitcoinExchange::printCalculation(std::string date, double rate, double ammount)
 {
 	double result = 0;

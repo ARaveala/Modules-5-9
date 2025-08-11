@@ -3,14 +3,14 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: shaboom <shaboom@student.42.fr>            +#+  +:+       +#+         #
+#    By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/23 11:11:54 by shaboom           #+#    #+#              #
-#    Updated: 2025/01/29 12:16:20 by shaboom          ###   ########.fr        #
+#    Updated: 2025/08/11 12:40:59 by araveala         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CPPFILES = $(wildcard *.cpp)
+CPPFILES = BitcoinExchange.cpp main.cpp
 CPP = c++
 CPPFLAGS = -Werror -Wextra -Wall -Wshadow -Wno-shadow -std=c++17 -MMD -MP
 BUILDDIR = buildofiles/

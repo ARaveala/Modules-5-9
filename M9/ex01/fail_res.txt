@@ -1,0 +1,13 @@
+Input has invalid character : only= ('space') and (+-*/) and (0,1,2,3,4,5,6,7,8,9)
+First char is not a digit 
+Expression does not contain any valid operators
+Input has invalid character : only= ('space') and (+-*/) and (0,1,2,3,4,5,6,7,8,9)
+Input has invalid character : only= ('space') and (+-*/) and (0,1,2,3,4,5,6,7,8,9)
+Error: Invalid RPN expression
+Error: Invalid RPN expression
+Error: Invalid RPN expression
+Error: Division by zero
+Error: Division by zero
+Error: Invalid RPN expression
+Error: Invalid number , numbers above 10 forbidden
+Input has invalid character : only= ('space') and (+-*/) and (0,1,2,3,4,5,6,7,8,9)

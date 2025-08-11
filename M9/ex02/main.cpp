@@ -6,7 +6,7 @@
 /*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/05 10:28:24 by shaboom           #+#    #+#             */
-/*   Updated: 2025/08/06 16:17:30 by araveala         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:24:24 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,10 @@
 #include <fstream>
 #include <stdexcept>
 #include <sstream>
-#include "PmergeMe.hpp" // Assuming your class is defined here
+#include "PmergeMe.hpp"
 
-// must fix very large individual numbers issue 
 
-std::string generateUniqueNumbers(size_t count, int maxValue = 1000000) {
+std::string generateUniqueNumbers(size_t count, int maxValue = 100000000) {
     std::set<int> unique; //ensures no doubles
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -84,13 +83,12 @@ int main(int argc, char** argv) {
 		std::cout<<"running manual tests  \n";
 		
 	}
-	const int testRuns = 1;       //  Number of test iterations
-    const int numCount = 10;      // Numbers per test
+	const int testRuns = 20;       //  Number of test iterations
+    const int numCount = 1000;      // Numbers per test
     int failures = 0;
 
     for (int i = 0; i < testRuns; ++i) {
         std::string numSet = generateUniqueNumbers(numCount);
-		//std::cout<<"checking numset before testing ="<<numSet<<"\n";
         try {
             PmergeMe test(numSet);
             test.test();

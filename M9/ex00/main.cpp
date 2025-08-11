@@ -6,7 +6,7 @@
 /*   By: araveala <araveala@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/29 11:57:21 by shaboom           #+#    #+#             */
-/*   Updated: 2025/07/18 11:40:00 by araveala         ###   ########.fr       */
+/*   Updated: 2025/08/11 12:43:40 by araveala         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 int main (int argc, char **argv)
 {
 	if (argc != 2) {
-		std::cerr << "Usage: " << argv[0] << " <conversions_file>" << std::endl;
+		std::cerr << "Usage issue with: " << argv[0] << " <conversions_file>" << std::endl;
 		return 1;
 	}
 	
